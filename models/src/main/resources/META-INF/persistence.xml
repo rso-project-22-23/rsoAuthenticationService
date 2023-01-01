@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+    <persistence-unit name="authentication-service-jpa" transaction-type="RESOURCE_LOCAL">
+        <non-jta-data-source>jdbc/AuthenticationServiceDS</non-jta-data-source>
+
+        <class>rso.itemscompare.authenticationservice.models.entities.UserCredentialsEntity</class>
+
+        <properties>
+            <property name="javax.persistence.schema-generation.create-source" value="metadata"/>
+            <property name="javax.persistence.schema-generation.drop-source" value="metadata"/>
+        </properties>
+    </persistence-unit>
+</persistence>
