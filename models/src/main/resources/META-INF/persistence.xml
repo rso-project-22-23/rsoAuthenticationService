@@ -3,7 +3,8 @@
     <persistence-unit name="authentication-service-jpa" transaction-type="RESOURCE_LOCAL">
         <non-jta-data-source>jdbc/AuthenticationServiceDS</non-jta-data-source>
 
-        <class>rso.itemscompare.authenticationservice.models.entities.UserCredentialsEntity</class>
+        <class>rso.itemscompare.authenticationservice.models.entities.UserEntity</class>
+        <class>rso.itemscompare.authenticationservice.models.entities.AuthTokenEntity</class>
 
         <properties>
             <property name="javax.persistence.schema-generation.create-source" value="metadata"/>

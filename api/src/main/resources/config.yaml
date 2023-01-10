@@ -4,12 +4,12 @@ kumuluzee:
     name: dev
   version: 1.0.0
   server:
-    base-url: http://host.docker.internal:8080
+    base-url: http://localhost:8080
     http:
       port: 8080
   datasources:
     - jndi-name: jdbc/AuthenticationServiceDS
-      connection-url: jdbc:postgresql://host.docker.internal:5432/rso_itemscompare_db
+      connection-url: jdbc:postgresql://localhost:5432/rso_itemscompare_db
       username: postgres
       password: postgres
   health:
@@ -19,8 +19,14 @@ kumuluzee:
         jndi-name: jdbc/AuthenticationServiceDS
   metrics:
     web-instrumentation:
-      - name: lists-endpoint
-        url-pattern: /v1/todo/*
+      - name: authenticate-endpoint
+        url-pattern: /v1/authenticate
+      - name: register-endpoint
+        url-pattern: /v1/register
+      - name: login-endpoint
+        url-pattern: /v1/login
+      - name: logout-endpoint
+        url-pattern: /v1/logout
   logs:
     config-file: '<?xml version="1.0" encoding="UTF-8"?>
                         <Configuration name="comments">
