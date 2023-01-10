@@ -4,12 +4,12 @@ kumuluzee:
     name: dev
   version: 1.0.0
   server:
-    base-url: http://localhost:8080
+    base-url: http://host.docker.internal:8080
     http:
       port: 8080
   datasources:
     - jndi-name: jdbc/AuthenticationServiceDS
-      connection-url: jdbc:postgresql://localhost:5432/rso_itemscompare_db
+      connection-url: jdbc:postgresql://host.docker.internal:5432/rso_itemscompare_db
       username: postgres
       password: postgres
   health:
