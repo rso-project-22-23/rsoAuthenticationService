@@ -52,6 +52,13 @@
             </dependency>
 
             <dependency>
+                <groupId>com.courier</groupId>
+                <artifactId>courier-java</artifactId>
+                <version>1.7.0</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>

@@ -5,6 +5,8 @@
 
         <class>rso.itemscompare.authenticationservice.models.entities.UserEntity</class>
         <class>rso.itemscompare.authenticationservice.models.entities.AuthTokenEntity</class>
+        <class>rso.itemscompare.authenticationservice.models.entities.PasswordTokenEntity</class>
+        <class>rso.itemscompare.authenticationservice.models.entities.RegistrationTokenEntity</class>
 
         <properties>
             <property name="javax.persistence.schema-generation.create-source" value="metadata"/>

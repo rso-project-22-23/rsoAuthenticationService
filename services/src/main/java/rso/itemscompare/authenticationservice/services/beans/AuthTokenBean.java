@@ -24,6 +24,7 @@ public class AuthTokenBean {
             throw new NotFoundException();
         }
 
+        em.refresh(entity);
         return AuthTokenConverter.toDto(entity);
     }
 

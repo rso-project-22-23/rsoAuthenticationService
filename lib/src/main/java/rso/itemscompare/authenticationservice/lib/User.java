@@ -5,6 +5,8 @@ public class User {
     private String userEmail;
     private String userPassword;
 
+    private boolean activated;
+
     public int getUserId() {
         return userId;
     }
@@ -27,5 +29,13 @@ public class User {
 
     public void setUserPassword(String userPassword) {
         this.userPassword = userPassword;
+    }
+
+    public boolean getActivated() {
+        return activated;
+    }
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
     }
 }

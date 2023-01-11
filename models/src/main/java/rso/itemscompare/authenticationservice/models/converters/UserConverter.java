@@ -9,6 +9,7 @@ public class UserConverter {
         dto.setUserId(entity.getId());
         dto.setUserEmail(entity.getEmail());
         dto.setUserPassword(entity.getPassword());
+        dto.setActivated(entity.getActivated());
 
         return dto;
     }
@@ -18,6 +19,7 @@ public class UserConverter {
         entity.setId(dto.getUserId());
         entity.setEmail(dto.getUserEmail());
         entity.setPassword(dto.getUserPassword());
+        entity.setActivated(dto.getActivated());
 
         return entity;
     }

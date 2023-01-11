@@ -3,8 +3,11 @@ package rso.itemscompare.authenticationservice.api.v1.resources;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import rso.itemscompare.authenticationservice.lib.AuthToken;
+import rso.itemscompare.authenticationservice.lib.RegistrationToken;
 import rso.itemscompare.authenticationservice.lib.User;
 import rso.itemscompare.authenticationservice.services.beans.AuthTokenBean;
+import rso.itemscompare.authenticationservice.services.beans.PasswordTokenBean;
+import rso.itemscompare.authenticationservice.services.beans.RegistrationTokenBean;
 import rso.itemscompare.authenticationservice.services.beans.UserBean;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -14,6 +17,7 @@ import javax.json.JsonObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.regex.Pattern;
@@ -27,6 +31,13 @@ public class AuthenticationServiceResource {
     private UserBean userBean;
     @Inject
     private AuthTokenBean authTokenBean;
+    @Inject
+    private RegistrationTokenBean registrationTokenBean;
+
+    @Inject
+    private PasswordTokenBean passwordTokenBean;
+
+    private final String USER_NOT_EXIST = "Specified user does not exist";
 
     @POST
     @Path("/authenticate")
@@ -37,9 +48,7 @@ public class AuthenticationServiceResource {
         try {
             user = userBean.getUserByEmail(userEmail);
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(buildErrorResponse("Specified user does not exist"))
-                    .build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(buildErrorResponse(USER_NOT_EXIST)).build();
         }
         try {
             AuthToken tokenObj = authTokenBean.getToken(user.getUserId());
@@ -77,9 +86,10 @@ public class AuthenticationServiceResource {
         }
 
         String hashedPassword = hashPassword(password);
+        String registrationToken = generateNewToken();
 
         try {
-            int numRowsAffected = userBean.addNewUser(user, hashedPassword);
+            int numRowsAffected = userBean.addNewUser(user, hashedPassword, registrationToken);
             String errorMessage = null;
             if (numRowsAffected < 1) {
                 errorMessage = "Failed to create new user";
@@ -91,6 +101,10 @@ public class AuthenticationServiceResource {
                         .entity(buildErrorResponse(errorMessage))
                         .build();
             }
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(buildErrorResponse("User not created: failed to send registration mail"))
+                    .build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(buildErrorResponse("Exception Occurred when trying to register: " + e.getMessage()))
@@ -110,9 +124,7 @@ public class AuthenticationServiceResource {
         try {
             user = userBean.getUserByEmail(userEmail);
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(buildErrorResponse("Specified user does not exist"))
-                    .build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(buildErrorResponse(USER_NOT_EXIST)).build();
         }
 
         String userHashedPassword = user.getUserPassword();
@@ -155,9 +167,7 @@ public class AuthenticationServiceResource {
         try {
             user = userBean.getUserByEmail(userEmail);
         } catch (NotFoundException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(buildErrorResponse("Specified user does not exist"))
-                    .build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(buildErrorResponse(USER_NOT_EXIST)).build();
         }
 
         int deleteTokenResult = authTokenBean.deleteTokenForUser(user.getUserId());
@@ -178,6 +188,67 @@ public class AuthenticationServiceResource {
         }
 
         return Response.status(Response.Status.OK).entity(true).build();
+    }
+
+    @GET
+    @Path("/confirm-registration")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response ConfirmRegistration(@QueryParam("user") String userEmail, @QueryParam("token") String token) {
+        User user;
+        try {
+            user = userBean.getUserByEmail(userEmail);
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(buildErrorResponse(USER_NOT_EXIST)).build();
+        }
+
+        if (user.getActivated()) {
+            return Response.status(Response.Status.OK).entity("Already activated").build();
+        }
+
+        try {
+            RegistrationToken tokenObj = registrationTokenBean.getToken(userEmail);
+            if (tokenObj.getToken().equals(token)) {
+                int activateResult = userBean.activateUser(user.getUserId(), user.getUserEmail());
+                if (activateResult != 1) {
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(buildErrorResponse("Something went wrong when trying to activate user"))
+                            .build();
+                }
+                return Response.status(Response.Status.OK).entity("You successfully activated you account").build();
+            }
+            return Response.status(Response.Status.OK).entity("Wrong URL for activating user account").build();
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Missing registration token").build();
+        }
+    }
+
+    @POST
+    @Path("/forgot-password")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response ForgotPassword(@QueryParam("user") String userEmail) {
+        try {
+            userBean.getUserByEmail(userEmail);
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(buildErrorResponse(USER_NOT_EXIST)).build();
+        }
+
+        String passwordToken = generateNewToken();
+        int saveTokenResult;
+        try {
+            saveTokenResult = passwordTokenBean.saveTokenForUser(userEmail, passwordToken);
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(buildErrorResponse("Failed to send reset password mail"))
+                    .build();
+        }
+        if (saveTokenResult != 1) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(buildErrorResponse("Could not generate token for resetting password"))
+                    .build();
+        }
+        return Response.status(Response.Status.CREATED).entity(true).build();
     }
 
     private JsonObject buildErrorResponse(String message) {
