@@ -8,4 +8,6 @@ RUN mkdir /app
 WORKDIR /app
 COPY --from=build ./app/api/target/authentication-service-api-1.0.0-SNAPSHOT.jar /app
 EXPOSE 8080
+ARG COURIER_TOKEN
+ENV COURIER_TOKEN ${COURIER_TOKEN}
 CMD ["java", "-jar", "authentication-service-api-1.0.0-SNAPSHOT.jar"]

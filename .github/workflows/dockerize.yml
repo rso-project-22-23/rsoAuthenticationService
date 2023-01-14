@@ -19,7 +19,7 @@ jobs:
         uses: josStorer/get-current-time@v2.0.2
         with:
           format: YYYY-MM-DD-HH-mm-ss
-          utcOffset: "+02:00"
+          utcOffset: "+01:00"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -38,3 +38,5 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/authentication-service:${{ steps.current-time.outputs.formattedTime }},
             ${{ secrets.DOCKERHUB_USERNAME }}/authentication-service:latest
+          build-args: |
+            COURIER_TOKEN=${{ secrets.COURIER_TOKEN }}

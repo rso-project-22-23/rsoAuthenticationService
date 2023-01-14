@@ -37,7 +37,10 @@ public class CourierClient {
         request.setMessage(message);
 
         SendEnhancedResponseBody response = new SendService().sendEnhancedMessage(request);
-        System.out.println(response);
+        System.out.println("Registration send email response: " + response);
+        if (response == null) {
+            throw new IOException("Failed to send email");
+        }
     }
 
     public void sendResetPasswordMail(String mail, String token) throws IOException {
@@ -58,6 +61,9 @@ public class CourierClient {
         request.setMessage(message);
 
         SendEnhancedResponseBody response = new SendService().sendEnhancedMessage(request);
-        System.out.println(response);
+        System.out.println("Reset password send email response: " + response);
+        if (response == null) {
+            throw new IOException("Failed to send email");
+        }
     }
 }
