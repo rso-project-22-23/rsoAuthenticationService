@@ -52,8 +52,13 @@ public class AuthenticationServiceResource {
         }
         try {
             AuthToken tokenObj = authTokenBean.getToken(user.getUserId());
-            if (token.equals(tokenObj.getToken())) {
+            boolean isTokenValid = token.equals(tokenObj.getToken());
+            if (isTokenValid && user.getActivated()) {
+                // authentication token is valid and user has confirmed account
                 return Response.status(Response.Status.OK).entity(true).build();
+            } else if (isTokenValid) {
+                // authentication token is valid but user did not yet confirm their account
+                return Response.status(Response.Status.OK).entity("Not activated").build();
             }
             return Response.status(Response.Status.OK).entity(false).build();
         } catch (NotFoundException e) {
