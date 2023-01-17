@@ -29,8 +29,7 @@ public class CourierClient {
         message.setTemplate("FMTGDCG12YMNKXNTRG15MYMBR3K0");
 
         HashMap<String, Object> data = new HashMap<>();
-        // TODO change this URL to live URL when deployed
-        String url = String.format("http://localhost:8080/v1/confirm-registration?user=%s&token=%s", mail, token);
+        String url = String.format("http://20.31.253.184/authentication-service/v1/confirm-registration?user=%s&token=%s", mail, token);
         data.put("confirm_url", url);
         message.setData(data);
 
