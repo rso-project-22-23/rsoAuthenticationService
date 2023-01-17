@@ -70,12 +70,20 @@ public class AuthenticationServiceResource {
     @Path("/register")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response register(@HeaderParam("user") String user, @HeaderParam("password") String password) {
+    public Response register(@HeaderParam("user") String user, @HeaderParam("password") String password,
+                             @HeaderParam("repeatPassword") String repeatPassword) {
         // check if email string is valid
         Pattern pattern = Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}");
         if (!pattern.matcher(user).matches()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(buildErrorResponse("Invalid email specified")).build();
+        }
+
+        if (!repeatPassword.equals(password)) {
+            if (!pattern.matcher(user).matches()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(buildErrorResponse("Repeated password does not match")).build();
+            }
         }
 
         boolean alreadyExists = true;
