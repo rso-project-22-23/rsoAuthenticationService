@@ -2,6 +2,11 @@ package rso.itemscompare.authenticationservice.api.v1.resources;
 
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import rso.itemscompare.authenticationservice.lib.AuthToken;
 import rso.itemscompare.authenticationservice.lib.RegistrationToken;
 import rso.itemscompare.authenticationservice.lib.User;
@@ -20,6 +25,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Pattern;
 
 @ApplicationScoped
@@ -43,6 +49,15 @@ public class AuthenticationServiceResource {
     @Path("/authenticate")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Authenticate user", description = "Checks if specified user's authentication token is valid.")
+    @APIResponses({
+            @APIResponse(description = "True if token is valid and false if it's not valid", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = boolean.class))),
+            @APIResponse(description = "Token is valid but user did not yet confirm account", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @APIResponse(description = "User doesn't exist", responseCode = "400",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response authenticate(@HeaderParam("userEmail") String userEmail, @HeaderParam("token") String token) {
         User user;
         try {
@@ -70,6 +85,13 @@ public class AuthenticationServiceResource {
     @Path("/register")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Register user", description = "Registers user into app, sends confirmation mail.")
+    @APIResponses({
+            @APIResponse(description = "User successfully registered", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = boolean.class))),
+            @APIResponse(description = "Invalid data received, ie. email string that is not valid email", responseCode = "400",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response register(@HeaderParam("user") String user, @HeaderParam("password") String password,
                              @HeaderParam("repeatPassword") String repeatPassword) {
         // check if email string is valid
@@ -131,6 +153,13 @@ public class AuthenticationServiceResource {
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Login user", description = "Logins user and returns authentication token.")
+    @APIResponses({
+            @APIResponse(description = "Authentication token upon successful login", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @APIResponse(description = "Invalid data specified, ie. invalid password", responseCode = "400",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response login(@HeaderParam("user") String userEmail, @HeaderParam("password") String password) {
         User user;
 
@@ -174,6 +203,13 @@ public class AuthenticationServiceResource {
     @Path("/logout")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Logout user", description = "Deletes authentication token for specified user.")
+    @APIResponses({
+            @APIResponse(description = "User wass successfully logged out", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = boolean.class))),
+            @APIResponse(description = "Invalid data specified, ie. user doesn't exist", responseCode = "400",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response logout(@HeaderParam("user") String userEmail) {
         User user;
 
@@ -207,6 +243,15 @@ public class AuthenticationServiceResource {
     @Path("/confirm-registration")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Confirm user account", description = "Confirms user account.")
+    @APIResponses({
+            @APIResponse(description = "User was successfully activated", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = boolean.class))),
+            @APIResponse(description = "User is already activated", responseCode = "200",
+                    content = @Content(schema = @Schema(implementation = boolean.class))),
+            @APIResponse(description = "Invalid data specified, ie. invalid activation URL", responseCode = "400",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response ConfirmRegistration(@QueryParam("user") String userEmail, @QueryParam("token") String token) {
         User user;
         try {
@@ -240,6 +285,13 @@ public class AuthenticationServiceResource {
     @Path("/forgot-password")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Send email for reset password", description = "Creates token for resetting password and sends email with URL for resetting password.")
+    @APIResponses({
+            @APIResponse(description = "Action succesfully executed", responseCode = "201",
+                    content = @Content(schema = @Schema(implementation = boolean.class))),
+            @APIResponse(description = "Invalid data specified, ie. email not in DB", responseCode = "400",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+    })
     public Response ForgotPassword(@QueryParam("user") String userEmail) {
         try {
             userBean.getUserByEmail(userEmail);

@@ -3,8 +3,12 @@ kumuluzee:
   env:
     name: dev
   version: 1.0.0
+  openapi-mp:
+    ui:
+      specification-server:
+        http://20.31.253.184/authentication-service
   server:
-    base-url: http://host.docker.internal:8080
+    base-url: http://20.31.253.184/authentication-service
     http:
       port: 8080
   datasources:
